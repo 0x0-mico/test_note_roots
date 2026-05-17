@@ -1,6 +1,6 @@
 use anyhow::{Result, anyhow};
 use miden_client_sqlite_store::ClientBuilderSqliteExt;
-use std::{path::PathBuf, sync::Arc};
+use std::{fs, path::PathBuf, sync::Arc};
 
 use miden_client::{
     DebugMode,
@@ -10,6 +10,29 @@ use miden_client::{
     note::NoteScript,
     rpc::{Endpoint, GrpcClient},
 };
+
+const SERIALIZED_NOTE_FILE: &str = "note.serialized";
+
+fn serialized_note_path() -> PathBuf {
+    PathBuf::from_iter([env!("CARGO_MANIFEST_DIR"), SERIALIZED_NOTE_FILE])
+}
+
+fn try_load_note_script_from_serialized_file() -> Result<Option<NoteScript>> {
+    let path = serialized_note_path();
+    println!("Looking if serialized.note exists at {:?}.", path);
+    if !path.is_file() {
+        println!("IT does not.");
+        return Ok(None);
+    }
+    let meta = fs::metadata(&path).map_err(|e| anyhow!("stat {:?}: {e:?}", path))?;
+    if meta.len() == 0 {
+        return Ok(None);
+    }
+    let bytes = fs::read(&path).map_err(|e| anyhow!("read {:?}: {e:?}", path))?;
+    let script =
+        NoteScript::from_bytes(&bytes).map_err(|e| anyhow!("deserialize {:?}: {e:?}", path))?;
+    Ok(Some(script))
+}
 
 fn read_masm_file(path_steps: &[&str]) -> Result<String> {
     let manifest_dir = env!("CARGO_MANIFEST_DIR");
@@ -64,7 +87,7 @@ fn get_note_script(code_builder: CodeBuilder, note_file_name: &str) -> Result<No
         .map_err(|e| anyhow!("Failed to compile note script: {}", e))
 }
 
-fn print_note_details(note_script: NoteScript) {
+fn print_note_details(note_script: &NoteScript) {
     println!("NOTE ROOT: {}", note_script.root().to_hex());
     println!("\nNOTE DIGESTS:");
     for digest in note_script.mast().procedure_digests() {
@@ -80,16 +103,21 @@ async fn main() -> Result<()> {
         .rpc(rpc_api.clone())
         .authenticator(keystore.into())
         .in_debug_mode(DebugMode::Enabled)
-        .filesystem_keystore("keystore")?
         .sqlite_store("store.sqlite3".into())
         .build()
         .await?;
     client.ensure_genesis_in_place().await?;
     client.sync_state().await?;
 
+    if let Some(script) = try_load_note_script_from_serialized_file()? {
+        println!("\n\n------------------\n\nSERIALIZED NOTE: web-sdk");
+        print_note_details(&script);
+    }
+
+    println!("\n\n------------------\n\nNOTE BUILT WITH: miden-client");
     let code_builder = client.code_builder();
     let note_script = get_note_script(code_builder, "EXAMPLE_NOTE.masm")?;
-    print_note_details(note_script);
-
+    print_note_details(&note_script);
+    println!("\n\n------------------\n\n");
     Ok(())
 }

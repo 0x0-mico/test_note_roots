@@ -86,7 +86,8 @@ async function run(): Promise<void> {
     rootWord.free()
 
     const serialized = noteScript.serialize()
-    const bodySha256 = await sha256Hex(serialized)
+    const serializedForDownload = Uint8Array.from(serialized)
+    const bodySha256 = await sha256Hex(serializedForDownload)
 
     const mastText = noteScript.toString()
     const guessedDigests = extractLikelyProcedureHexLines(mastText)
@@ -103,13 +104,14 @@ async function run(): Promise<void> {
     appEl.innerHTML = `
       <main>
         <h1>Note script root</h1>
+        <button type="button" id="dl-serialized">Download note.serialized</button>
         <p class="mono root"><code>${escapeHtml(noteRootHex)}</code></p>
 
         <details>
           <summary>More digests &amp; debug</summary>
           <section>
             <h2>Serialized body SHA-256</h2>
-            <p class="hint"><code>NoteScript.serialize()</code> (${serialized.byteLength} bytes).</p>
+            <p class="hint"><code>NoteScript.serialize()</code> (${serializedForDownload.byteLength} bytes).</p>
             <p class="mono"><code>${escapeHtml(bodySha256)}</code></p>
           </section>
           <section>
@@ -123,6 +125,18 @@ async function run(): Promise<void> {
         </details>
       </main>
     `
+
+    document.getElementById('dl-serialized')?.addEventListener('click', () => {
+      const blob = new Blob([Uint8Array.from(serializedForDownload)], {
+        type: 'application/octet-stream',
+      })
+      const a = Object.assign(document.createElement('a'), {
+        href: URL.createObjectURL(blob),
+        download: 'note.serialized',
+      })
+      a.click()
+      URL.revokeObjectURL(a.href)
+    })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
     appEl.innerHTML = `<p class="err">Compile failed: ${escapeHtml(msg)}</p>`
