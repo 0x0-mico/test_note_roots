@@ -88,8 +88,8 @@ fn get_note_script(code_builder: CodeBuilder, note_file_name: &str) -> Result<No
 }
 
 fn print_note_details(note_script: &NoteScript) {
-    println!("NOTE ROOT: {}", note_script.root().to_hex());
-    println!("\nNOTE DIGESTS:");
+    println!("\nNOTE ROOT: {}", note_script.root().to_hex());
+    println!("NOTE DIGESTS:");
     for digest in note_script.mast().procedure_digests() {
         println!("{}", digest.to_hex());
     }

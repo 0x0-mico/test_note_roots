@@ -58,14 +58,14 @@ async function run(): Promise<void> {
     const noteScript = await client.compile.noteScript({
       code: EXAMPLE_NOTE,
       libraries: [
-        {
-          namespace: 'sandbox::lib1',
-          code: lib1,
+                {
+          namespace: 'sandbox::lib0',
+          code: lib0,
           linking: Linking.Static,
         },
         {
-          namespace: 'sandbox::lib0',
-          code: lib0,
+          namespace: 'sandbox::lib1',
+          code: lib1,
           linking: Linking.Static,
         },
         {
