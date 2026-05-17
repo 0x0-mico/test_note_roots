@@ -1,0 +1,3 @@
+pub proc foo
+    nop
+end

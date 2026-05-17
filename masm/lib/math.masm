@@ -1,6 +1,0 @@
-use miden::core::sys
-
-@locals(2)
-pub proc safe_add(b: felt, a: felt) -> felt
-    loc_load.1 loc_load.0
-end

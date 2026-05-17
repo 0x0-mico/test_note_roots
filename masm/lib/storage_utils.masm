@@ -1,6 +1,0 @@
-use zoro_miden::lib::math
-
-@locals(9)
-pub proc add_to_map_item
-    exec.math::safe_add
-end

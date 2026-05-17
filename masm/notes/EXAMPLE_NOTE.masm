@@ -1,0 +1,10 @@
+use sandbox::acc0
+
+proc qux
+    call.acc0::baz
+end
+
+@note_script
+pub proc main
+    exec.qux
+end

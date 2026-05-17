@@ -1,0 +1,7 @@
+use sandbox::lib1::foo
+use sandbox::lib2::bar
+
+pub proc baz
+    exec.foo
+    exec.bar
+end

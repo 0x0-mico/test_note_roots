@@ -1,0 +1,6 @@
+use miden::core::sys
+
+@locals(2)
+pub proc wiz
+    nop
+end

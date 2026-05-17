@@ -1,9 +1,9 @@
 import './style.css'
-import DEPOSIT_SCRIPT from '@/masm/notes/DEPOSIT.masm?raw'
-import zoropool from '@/masm/accounts/zoropool.masm?raw'
-import assetUtils from '@/masm/lib/asset_utils.masm?raw'
-import mathUtils from '@/masm/lib/math.masm?raw'
-import storageUtils from '@/masm/lib/storage_utils.masm?raw'
+import EXAMPLE_NOTE from '@/masm/notes/EXAMPLE_NOTE.masm?raw'
+import acc0 from '@/masm/accounts/acc0.masm?raw'
+import lib1 from '@/masm/lib/lib1.masm?raw'
+import lib0 from '@/masm/lib/lib0.masm?raw'
+import lib2 from '@/masm/lib/lib2.masm?raw'
 
 import { Linking, MidenClient } from '@miden-sdk/miden-sdk'
 
@@ -25,11 +25,6 @@ async function sha256Hex(bytes: Uint8Array): Promise<string> {
     .join('')
 }
 
-/**
- * Rust's `mast().procedure_digests()` isn't exposed on `NoteScript` in the JS
- * bindings. The Mast dump sometimes lists digest-like lines as 64 hex nibbles,
- * optionally with an `0x` prefix — collect those as a coarse stand-in.
- */
 function extractLikelyProcedureHexLines(mastText: string): string[] {
   const seen = new Set<string>()
   const out: string[] = []
@@ -58,29 +53,29 @@ async function run(): Promise<void> {
 
   try {
     appEl.innerHTML =
-      '<p class="status">Compiling <code>DEPOSIT.masm</code> with static libraries…</p>'
+      '<p class="status">Compiling <code>EXAMPLE_NOTE.masm</code> with static libraries…</p>'
 
     const noteScript = await client.compile.noteScript({
-      code: DEPOSIT_SCRIPT,
+      code: EXAMPLE_NOTE,
       libraries: [
         {
-          namespace: 'zoro_miden::lib::math',
-          code: mathUtils,
+          namespace: 'sandbox::lib1',
+          code: lib1,
           linking: Linking.Static,
         },
         {
-          namespace: 'zoro_miden::lib::storage_utils',
-          code: storageUtils,
+          namespace: 'sandbox::lib0',
+          code: lib0,
           linking: Linking.Static,
         },
         {
-          namespace: 'zoro_miden::lib::asset_utils',
-          code: assetUtils,
+          namespace: 'sandbox::lib2',
+          code: lib2,
           linking: Linking.Static,
         },
         {
-          namespace: 'zoroswap::zoropool',
-          code: zoropool,
+          namespace: 'sandbox::acc0',
+          code: acc0,
           linking: Linking.Static,
         },
       ],

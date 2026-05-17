@@ -22,36 +22,35 @@ fn read_masm_file(path_steps: &[&str]) -> Result<String> {
         .map_err(|e| anyhow!("Error reading MASM file at path {path:?}: {e:?}"))
 }
 
-fn link_math(mut code_builder: CodeBuilder) -> Result<CodeBuilder> {
-    let math_code = read_masm_file(&["lib", "math.masm"])?;
-    code_builder.link_module("zoro_miden::lib::math", &math_code)?;
+fn link_lib0(mut code_builder: CodeBuilder) -> Result<CodeBuilder> {
+    let code = read_masm_file(&["lib", "lib0.masm"])?;
+    code_builder.link_module("sandbox::lib0", &code)?;
     Ok(code_builder)
 }
 
-fn link_storage_utils(code_builder: CodeBuilder) -> Result<CodeBuilder> {
-    let mut code_builder = link_math(code_builder)?;
-    let storage_utils_code = read_masm_file(&["lib", "storage_utils.masm"])?;
-    code_builder.link_module("zoro_miden::lib::storage_utils", &storage_utils_code)?;
+fn link_lib1(mut code_builder: CodeBuilder) -> Result<CodeBuilder> {
+    let code = read_masm_file(&["lib", "lib1.masm"])?;
+    code_builder.link_module("sandbox::lib1", &code)?;
     Ok(code_builder)
 }
 
-fn link_asset_utils(mut code_builder: CodeBuilder) -> Result<CodeBuilder> {
-    let asset_utils_code = read_masm_file(&["lib", "asset_utils.masm"])?;
-    code_builder.link_module("zoro_miden::lib::asset_utils", &asset_utils_code)?;
+fn link_lib2(code_builder: CodeBuilder) -> Result<CodeBuilder> {
+    let mut code_builder = link_lib0(code_builder)?;
+    let code = read_masm_file(&["lib", "lib2.masm"])?;
+    code_builder.link_module("sandbox::lib2", &code)?;
     Ok(code_builder)
 }
 
-fn link_zoropool(code_builder: CodeBuilder) -> Result<CodeBuilder> {
-    let code_builder = link_asset_utils(code_builder)?;
-    let mut code_builder = link_storage_utils(code_builder)?;
-
-    let pool_code = read_masm_file(&["accounts", "zoropool.masm"])?;
-    code_builder.link_module("zoroswap::zoropool", &pool_code)?;
+fn link_acc0(code_builder: CodeBuilder) -> Result<CodeBuilder> {
+    let mut code_builder = link_lib1(code_builder)?;
+    code_builder = link_lib2(code_builder)?;
+    let pool_code = read_masm_file(&["accounts", "acc0.masm"])?;
+    code_builder.link_module("sandbox::acc0", &pool_code)?;
     Ok(code_builder)
 }
 
 fn link_all_libraries(code_builder: CodeBuilder) -> Result<CodeBuilder> {
-    link_zoropool(code_builder)
+    link_acc0(code_builder)
 }
 
 fn get_note_script(code_builder: CodeBuilder, note_file_name: &str) -> Result<NoteScript> {
@@ -89,7 +88,7 @@ async fn main() -> Result<()> {
     client.sync_state().await?;
 
     let code_builder = client.code_builder();
-    let note_script = get_note_script(code_builder, "DEPOSIT.masm")?;
+    let note_script = get_note_script(code_builder, "EXAMPLE_NOTE.masm")?;
     print_note_details(note_script);
 
     Ok(())

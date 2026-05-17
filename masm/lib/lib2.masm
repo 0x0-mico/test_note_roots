@@ -1,0 +1,6 @@
+use sandbox::lib0
+
+@locals(9)
+pub proc bar
+    exec.lib0::wiz
+end

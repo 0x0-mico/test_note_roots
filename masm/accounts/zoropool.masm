@@ -1,8 +1,0 @@
-use zoro_miden::lib::asset_utils::expand_asset
-use zoro_miden::lib::storage_utils::add_to_map_item
-
-pub proc deposit
-    exec.expand_asset
-    exec.add_to_map_item
-end
-
