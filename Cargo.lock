@@ -4061,13 +4061,8 @@ name = "test_storagemap"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "miden-assembly",
  "miden-client",
  "miden-client-sqlite-store",
- "miden-core",
- "miden-protocol",
- "miden-standards",
- "miden-tx",
  "rand 0.9.4",
  "tokio",
 ]
